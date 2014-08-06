@@ -13,9 +13,12 @@ from access_token import ACCESS_TOKEN
 
 client = Client(access_token=ACCESS_TOKEN)
 athlete = client.get_athlete()
-activities = client.get_activities(after=(datetime.date.today()+relativedelta(day=1)))
+start_date = datetime.date.today()+relativedelta(months=-1)
+activities = client.get_activities(after=start_date)
 activities_list = []
 for activity in activities:
+    if activity.start_date.date().month != start_date.month:
+        continue
     date = activity.start_date.date().isoformat()
     distance = activity.distance
     duration = activity.elapsed_time.total_seconds()/60
@@ -29,7 +32,7 @@ for activity in activities:
     activities_list.append((date, activity_string, activity.name))
 
 employee_name = ' '.join((athlete.firstname, athlete.lastname))
-month = datetime.datetime.now().strftime("%B")
+month = start_date.strftime("%B")
 report = template.render(employee_name=employee_name,
                 month=month,
                 activities=activities_list)
